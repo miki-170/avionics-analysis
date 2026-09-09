@@ -1,2 +1,3 @@
 .venv
 data/raw
+src/models/__pycache__
