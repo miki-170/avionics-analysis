@@ -13,6 +13,8 @@ class data_reading:
         self.dest = Path(f"data/clean/Table_{self.number}")
 
         self.data = self._read_data()
+        self._date_extracter()
+        
 
     def _read_data(self):
         table = pd.DataFrame()
@@ -32,10 +34,27 @@ class data_reading:
                 
         return table.reset_index(drop=True)
 
+    def _date_extracter(self):
+        if 'reporting_period' in self.data.columns:
+            name = 'reporting_period'
+        elif 'this_period' in self.data.columns:
+            name ='this_period'
+        else:
+            raise ValueError("Different date column than expected.")
+        
+        exctraced = self.data[name].astype(str).str.extract(r'(20\d{2})0*(\d{2})')
+
+        exctraced.columns = ['year','month']
+        
+        self.data ['date'] = pd.to_datetime(exctraced['year'] + exctraced['month'], format='%Y%m')
+        
+        self.data.drop(columns=[name],inplace=True)
+       
+        
     @property
     def save(self):
         self.dest.mkdir(parents=True,exist_ok=True)
+        print(self.data)
         self.data.to_csv(self.dest / "combined.csv", index=False)
     
-
 
